@@ -5,4 +5,3 @@ torch
 ray
 pandas
 torch
-pillow

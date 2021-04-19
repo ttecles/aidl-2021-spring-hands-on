@@ -9,15 +9,11 @@ from model import MyModel
 from utils import accuracy, save_model
 
 
-use_ray_tune = True
-use_gpu = False
+use_ray_tune = False
 
-if use_gpu:
-    if not torch.cuda.is_available():
-        raise Exception("no CUDA available")
-    device = torch.device("cuda")
-else:
-    device = torch.device("cpu")
+if not torch.cuda.is_available():
+    raise Exception("no CUDA available")
+device = torch.device("cuda")
 
 
 def train_single_epoch(model, train_loader, lr):
@@ -104,8 +100,6 @@ if __name__ == "__main__":
         def tune_train_model(config, checkpoint_dir=None):
             train_model(config)
         
-        resources = {'gpu': 1} if use_gpu else {'cpu': 1}
-
         ray.init(configure_logging=False)
         analysis = tune.run(
             tune_train_model,
@@ -113,7 +107,7 @@ if __name__ == "__main__":
             mode="max",
             # metric="val_loss",
             # metric="min",
-            resources_per_trial=resources,
+            resources_per_trial={'gpu': 1, 'cpu': 1},
             num_samples=8,
             config={
                 # https://docs.ray.io/en/master/tune/api_docs/search_space.html
@@ -122,12 +116,13 @@ if __name__ == "__main__":
                 "loader_workers": 2,
                 "epochs": 20,
                 "batch_size": tune.lograndint(16, 128),
-                "learning_rate": tune.loguniform(1e-4, 1e-1),
-                "conv_kern": tune.randint(16, 128),
+                "learning_rate": tune.loguniform(1e-4, 1e-2),
+                "conv_kern": tune.randint(32, 128),
                 "mlp_neurons": tune.randint(100, 150), 
                 "dropout": tune.grid_search([0.1, 0.2, 0.3, 0.4, 0.5]),
             })
 
+        print(analysis)
         print("Best hyperparameters found were: ", analysis.best_config)
     else:
         config = { # manual, accuracy=97.7%
@@ -141,7 +136,27 @@ if __name__ == "__main__":
             "mlp_neurons": 120,
             "dropout": 0.5,
         }
+        config = { # ray, accuracy=98.4%
+            "train_dataset_factor": 0.7,
+            "test_count": 20,
+            "loader_workers": 2,
+            "batch_size": 59,
+            "epochs": 20,
+            "learning_rate": 0.001,
+            "conv_kern": 102,
+            "mlp_neurons": 138,
+            "dropout": 0.3,
+        }
+        config = { # manual, accuracy=98.6%
+            "train_dataset_factor": 0.7,
+            "test_count": 20,
+            "loader_workers": 2,
+            "batch_size": 32,
+            "epochs": 20,
+            "learning_rate": 0.001,
+            "conv_kern": 64,
+            "mlp_neurons": 120,
+            "dropout": 0.25,
+        }
         model, test_dataset = train_model(config)
         test_model(model, test_dataset)
-
-

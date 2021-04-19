@@ -2,18 +2,21 @@ import torch.nn as nn
 
 class MyModel(nn.Module):
 
-    def __init__(self, conv_kern=64, mlp_neurons=120):
+    def __init__(self, conv_kern=64, mlp_neurons=120, dropout=0.5):
         super().__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(1, int(conv_kern/2), 3),
             nn.ReLU(),
             nn.MaxPool2d(2),
+            nn.Dropout(dropout),
             nn.Conv2d(int(conv_kern/2), conv_kern, 3),
             nn.ReLU(),
             nn.MaxPool2d(2),
+            nn.Dropout(dropout),
             nn.Conv2d(conv_kern, conv_kern, 3),
             nn.ReLU(),
             nn.MaxPool2d(2),
+            nn.Dropout(dropout),
         )
         self.mlp = nn.Sequential(
             nn.Linear(6*6*conv_kern, mlp_neurons),

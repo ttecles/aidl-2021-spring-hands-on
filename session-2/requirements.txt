@@ -2,6 +2,6 @@ matplotlib
 numpy
 Pillow
 torch
-ray
+ray[tune]
 pandas
 torchvision

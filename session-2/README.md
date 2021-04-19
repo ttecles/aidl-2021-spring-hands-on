@@ -1,3 +1,4 @@
+
 # Session 2
 Implement a full project training on [Chinese MNIST](https://www.kaggle.com/gpreda/chinese-mnist) with hyperparameter tuning.
 ## Installation
@@ -24,4 +25,10 @@ python session-2/main.py
 To run the project with hyperparameter tuning, run
 ```
 python session-2/main_hyperparam_optimize.py
+```
+
+Windows pytorch with cuda support
+
+```
+pip3 install torch==1.8.1+cu102 torchvision==0.9.1+cu102 torchaudio===0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 ```

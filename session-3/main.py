@@ -8,17 +8,26 @@ from torchvision.datasets import ImageFolder
 import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
-
+import torch.nn as nn
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+criterion = nn.BCELoss()
 
 
 def train_single_epoch(model, train_loader, optimizer):
     model.train()
     accs, losses = [], []
-    for x, y in train_loader:
+    for data, target in train_loader:
         # You will need to do y = y.unsqueeze(1).float() to add an output dimension to the labels and cast to the correct type
-        ...
+        data, target = data.float().to(device), target.float().to(device)
+        target = target.unsqueeze(-1)
+        optimizer.zero_grad()
+        output = model(data)
+        loss = criterion(output, target)
+        loss.backward()
+        optimizer.step()
+        pred = output.round()  # get the prediction
+        acc = pred.eq(target.view_as(pred)).sum()/len(target)
         losses.append(loss.item())
         accs.append(acc.item())
     return np.mean(losses), np.mean(accs)
@@ -28,8 +37,13 @@ def eval_single_epoch(model, val_loader):
     accs, losses = [], []
     with torch.no_grad():
         model.eval()
-        for x, y in val_loader:
-            ...
+        for data, target in val_loader:
+            data, target = data.float().to(device), target.float().to(device)
+            target = target.unsqueeze(-1)
+            output = model(data)
+            loss = criterion(output, target)
+            pred = output.round()  # get the prediction
+            acc = pred.eq(target.view_as(pred)).sum()/len(target)
             losses.append(loss.item())
             accs.append(acc.item())
     return np.mean(losses), np.mean(accs)
@@ -37,10 +51,14 @@ def eval_single_epoch(model, val_loader):
 
 def train_model(config):
 
-    data_transforms = transforms.Compose([...])
-    train_dataset = ImageFolder...
+    data_transforms = transforms.Compose([
+        transforms.Resize(150),
+        transforms.CenterCrop(150),
+        transforms.ToTensor()
+    ])
+    train_dataset = ImageFolder("dataset/cars_vs_flowers/training_set", data_transforms)
     train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=True)
-    test_dataset = ImageFolder...
+    test_dataset = ImageFolder("dataset/cars_vs_flowers/test_set", data_transforms)
     test_loader = DataLoader(test_dataset, batch_size=config["batch_size"])
 
     my_model = MyModel().to(device)

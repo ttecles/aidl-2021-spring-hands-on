@@ -28,8 +28,8 @@ def _load_model():
     VOCAB = checkpoint["vocab"]
     # TODO load the model. You can get `embed_dim` and `num_class` from the checkpoint. 
     # TODO Then, load the state dict of the model
-    MODEL = ...
-    MODEL...
+    MODEL = SentimentAnalysis(len(VOCAB), checkpoint["embed_dim"], checkpoint["num_class"])
+    MODEL.load_state_dict(checkpoint["model_state_dict"])
 
     NGRAMS = checkpoint["ngrams"]
     TOKENIZER = get_tokenizer("basic_english")
@@ -45,7 +45,7 @@ def predict_review_sentiment(text):
 
     # Compute output
     # TODO compute the output of the model. Note that you will have to give it a 0 as an offset.
-    output = ...
+    output = MODEL(text, 0)
     confidences = torch.softmax(output, dim=1)
     return confidences.squeeze()[
         1

@@ -1,8 +1,8 @@
 import logging
 import pathlib
-
 import torch
 from flask import Flask, render_template, request
+from torch._C import dtype
 from torchtext.data.utils import get_tokenizer, ngrams_iterator
 
 from model import SentimentAnalysis
@@ -45,7 +45,7 @@ def predict_review_sentiment(text):
 
     # Compute output
     # TODO compute the output of the model. Note that you will have to give it a 0 as an offset.
-    output = MODEL(text, 0)
+    output = MODEL(text, torch.LongTensor([0]))
     confidences = torch.softmax(output, dim=1)
     return confidences.squeeze()[
         1

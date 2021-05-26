@@ -28,10 +28,10 @@ def train():
     train_X, train_y, test_X, test_y = load_data()
 
     # TODO instantiate a LightGBMRegressor
-    gbm = ...
+    gbm = lgb.LGBMRegressor()
 
     # TODO train the gbm with the train dataset
-    ...
+    gbm.fit(train_X, train_y)
 
     print(
         "=" * 40,
